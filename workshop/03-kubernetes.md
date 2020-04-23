@@ -1,13 +1,14 @@
-== Kubernetes
+## Kubernetes
 
-In order to run our applications on a Kubernetes cluster, we will need to create a few resources.
-Ultimately, we define our environment declaratively, using Infrastructure-as-Code, similar to what we did using the `Dockerfile` files, but this time for the whole environment.
-Thus, we want to define how many replicas of our individual application images we want to run, how they are connected and configured, etc.
-All of that as code which should reside in our project.
+Чтобы запустить наши приложения в кластере Kubernetes, нам нужно создать определенные ресурсы.
+В конечном счете все, что мы делаем - это определяем нашу среду исполнения, используя Infrastructure-as-Code, аналогично тому, что мы делали с использованием файлов `Dockerfile`, но на этот раз для всей среды.
 
-Let's examine the resources we need to create.
+Сначала нам надо определить, сколько реплик наших отдельных образов приложений мы хотим запустить, как они подключены, настроены и т.д.
+Все это хранится так же, как и программный код, который должен находиться в нашем проекте.
 
-=== Pods
+Давайте рассмотрим ресурсы, которые нам нужно создать.
+
+## Pod-ы
 
 A pod is the atomic workload inside Kubernetes clusters.
 It is an abstraction over our application instance and contains _usually_ a single container.
@@ -38,7 +39,7 @@ The snippet defines the specification of one pod that should contain a single co
 Kubernetes pods are mortal and once they terminate, they are usually not re-started, but recreated.
 To make sure that we don't have to recreate the pod resources manually, we use controllers that manage a desired number of pod replicas for us, here Kubernetes deployments.
 
-=== Deployments
+## Deployments
 
 We create a Kubernetes deployment that manages one or more replicas of our microservices for us.
 Have a look at the following Kubernetes deployment definition:
@@ -77,7 +78,7 @@ Kubernetes will try to make sure that the new changes will be reflected, while k
 It ships with zero-downtime deployment support out of the box.
 
 
-==== Life cycle &amp; probes
+## Life cycle &amp; probes
 
 A pod that contains a Java application will need a few moments to be fully up-and-running.
 Since Kubernetes has no knowledge of the contents of the running container it could only assume that running pods are immediately able to handle traffic.
@@ -145,8 +146,8 @@ The command will apply, that is create or update, all resources that resides und
 You can check whether the resources have been created successfully, by querying the current deployments and pods:
 
 ----
-kubectl get pods 
-kubectl get deployments 
+kubectl get pods
+kubectl get deployments
 ----
 
 After a short startup phase, you should see two pods, one for coffee-shop and one for barista, that are ready, i.e. `READY: ... 1/1`.
@@ -154,7 +155,7 @@ After a short startup phase, you should see two pods, one for coffee-shop and on
 Now our two applications apparently are running in the cloud, but how to connect to them?
 
 
-=== Services
+## Services
 
 A Kubernetes service is a logical abstraction over "`applications`" (whatever these are) and the replicas of these.
 Services are single points of entry when we want to connect to our microservices.
@@ -208,7 +209,7 @@ kubectl get services
 ----
 
 
-=== Accessing our applications
+## Accessing our applications
 
 Now, we will connect to our coffee-shop application from outside the cluster.
 
@@ -239,7 +240,7 @@ NOTE: If you have created a standard cluster, you can use a Kubernetes ingress r
 However, in this workshop, we'll focus on Istio networking and thus will demonstrate Istio gateway resources instead (part of the next section).
 
 
-==== Kubernetes Config Maps
+## Kubernetes Config Maps
 
 We can define environment variables directly in Kubernetes deployment definitions, or configure them in so called config maps.
 A config map is a Kubernetes resources that stores configuration properties in the cluster.
@@ -292,7 +293,7 @@ curl <ip-address>:<node-port>/coffee-shop/resources/orders/<order-uuid>
 ----
 
 
-=== 12 factors
+## 12 factors
 
 The https://12factor.net/[12 factors^] of modern software-as-a-service applications describe what aspects developers should take into account.
 Have a look at the described factors and contemplate, where we've already covered these aspects by using Enterprise Java with cloud-native technologies.
