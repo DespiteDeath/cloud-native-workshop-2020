@@ -10,16 +10,14 @@
 
 ## Pod-ы
 
-A pod is the atomic workload inside Kubernetes clusters.
-It is an abstraction over our application instance and contains _usually_ a single container.
-That is, that the Docker containers we had in the last part will now run inside Kubernetes pods, one pod per container instance.
-If we want to have multiple replicas of our applications, we create multiple pods.
+Pod — это наименьший (базовый) модуль в Kubernetes. Это абстракция над нашим экземпляром приложения, которая содержит **_обычно_** один контейнер.
+То есть каждый из контейнеров Docker, которые мы создали в прошлом разделе, теперь будет работать внутри контейнеров Kubernetes, по одному на каждый экземпляр контейнера.
+Если мы хотим иметь несколько копий наших приложений, мы создаем несколько pod-ов.
 
-For your information, the following shows a snippet of a YAML pod definition.
-This is not something that we create yet, but make sure that you can follow along the semantics of the definitions.
+Ниже приведен фрагмент кода YAML, описывающего pod.
+Пока создавать pod мы не будем, но давайте пройдемся по этому файлу, чтобы понять основные принципы.
 
-[source,yaml]
-----
+```yaml
 # ...
 metadata:
   labels:
@@ -32,20 +30,19 @@ spec:
     - containerPort: 9080
   restartPolicy: Always
 # ...
-----
+```
+Фрагмент выше определяет спецификацию одного pod-а, который содержит  контейнер, созданный из образа Docker coffee-shop.
 
-The snippet defines the specification of one pod that should contain a single container which is created from our coffee-shop Docker image.
+Pod'ы в Kubernetes обычно не перезапускают. Если pod по какой-то причине останавливается, его уничтожают и создают заново.
 
-Kubernetes pods are mortal and once they terminate, they are usually not re-started, but recreated.
-To make sure that we don't have to recreate the pod resources manually, we use controllers that manage a desired number of pod replicas for us, here Kubernetes deployments.
+Чтобы убедиться, что нам не нужно пересоздавать ресурсы модуля вручную, мы используем контроллеры, которые следят за созданием необходимого количества копий pod-ов - Kubernetes deployments.
 
 ## Deployments
 
 We create a Kubernetes deployment that manages one or more replicas of our microservices for us.
 Have a look at the following Kubernetes deployment definition:
 
-[source,yaml]
-----
+```yaml
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -67,7 +64,7 @@ spec:
         image: de.icr.io/cee-<your-name>-workshop/coffee-shop:1
         ports:
         - containerPort: 9080
-----
+```
 
 This definition looks similar to the pod snippet before, but it encapsulates the pod as a template, from which it'll create the pod replicas.
 The deployment will ensure that the desired number of replicas will be met.
@@ -96,8 +93,7 @@ The `curl` commands will connect to the application servers, and the health chec
 
 Now, have a look at the resulting deployment definition:
 
-[source,yaml]
-----
+```yaml
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -127,7 +123,7 @@ spec:
           exec:
             command: ["sh", "-c", "curl -s http://localhost:9080/health | grep -q coffee-shop"]
           initialDelaySeconds: 40
-----
+```
 
 We create YAML files with this content under the `deployment/` folders of both microservice projects.
 One deployment will be called `coffee-shop`, like the one displayed, and the other one `barista`.
@@ -136,19 +132,19 @@ Make sure that all names, labels, image, and URL declarations are correct.
 Now, we finally want to create these resources in our Kubernetes cluster.
 We simply apply the files with the `kubectl apply` command:
 
-----
+```
 kubectl apply -f coffee-shop/deployments/
 kubectl apply -f barista/deployments/
-----
+```
 
 The command will apply, that is create or update, all resources that resides under the corresponding directory.
 
 You can check whether the resources have been created successfully, by querying the current deployments and pods:
 
-----
+```
 kubectl get pods
 kubectl get deployments
-----
+```
 
 After a short startup phase, you should see two pods, one for coffee-shop and one for barista, that are ready, i.e. `READY: ... 1/1`.
 
@@ -166,7 +162,7 @@ The latter enables us to simply connect to host names such as `barista`, if a se
 
 Let's have a look at the coffee-shop service definition:
 
-----
+```yaml
 kind: Service
 apiVersion: v1
 metadata:
@@ -180,7 +176,7 @@ spec:
     - port: 9080
       name: http
   type: NodePort
-----
+```
 
 The service resource only defines a name, some meta data labels, and where to route traffic to: all pods that match the given selector.
 If you have a look at our deployment definitions again, you will see that all pods define an identical `app` label.
@@ -194,19 +190,19 @@ Again, make sure that the name, label, and selector definition match either the 
 
 We create these resources on the cluster as well, by issuing the same commands like before:
 
-----
+```
 kubectl apply -f coffee-shop/deployments/
 kubectl apply -f barista/deployments/
-----
+```
 
 This is the nice story about declarative Infrastructure-as-Code files: we specify the desired state, and let Kubernetes _apply_ the definitions against the cluster.
 Our directories now contain the service definitions, as well.
 
 You can now verify whether the services have been created correctly:
 
-----
+```
 kubectl get services
-----
+```
 
 
 ## Accessing our applications
@@ -216,25 +212,25 @@ Now, we will connect to our coffee-shop application from outside the cluster.
 If we have created a lite cluster we have to connect to our application via the IP address of the (only) node and the node port of the service.
 Therefore, we retrieve the public IP address of our cluster:
 
-----
+```
 ibmcloud ks workers --cluster cloud-native
 ID         Public IP       Private IP      Machine Type   State    Status   Zone    Version   
 kube-xxx   159.122.186.7   10.144.188.64   free           normal   Ready    mil01   1.10.12_1541   
-----
+```
 
 And the node port of our coffee-shop application:
 
-----
+```
 kubectl get service coffee-shop
 NAME          TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 coffee-shop   NodePort   172.21.23.149   <none>        9080:30995/TCP   2m
-----
+```
 
 With the example details, we can access our coffee-shop application using the URL `159.122.186.7:30995`, by combining the public IP address and the node port of the service:
 
-----
+```
 curl <ip-address>:<node-port>/coffee-shop/resources/orders -i
-----
+```
 
 NOTE: If you have created a standard cluster, you can use a Kubernetes ingress resources.
 However, in this workshop, we'll focus on Istio networking and thus will demonstrate Istio gateway resources instead (part of the next section).
@@ -248,22 +244,20 @@ It can be mapped to files or, as in our example, environment variables.
 
 We create the following Kubernetes YAML definition:
 
-[source,yaml]
-----
+```yaml
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: coffee-config
 data:
   location: CEE
-----
+```
 
 This defines the config map `coffee-config`, which contains the property `location` with the value `CEE`.
 
 In order to make that property available to the running pods later on, we include the value in our Kubernetes deployment definition:
 
-[source,yaml]
-----
+```yaml
 # ...
 containers:
 - name: coffee-shop
@@ -278,7 +272,7 @@ containers:
         key: location
   livenessProbe:
 # ...
-----
+```
 
 The above example maps the config map values to environment variables in the pods.
 As MicroProfile Config ships with a default config source for environment variables, this property will automatically be available to our application.
@@ -287,18 +281,20 @@ Thus, the injected value for the `location` will be the enum value `CEE`.
 You can have a look at the coffee order locations under the resource for single coffee orders.
 You retrieve the URL of a single coffee order from the response of all orders:
 
-----
+```
 curl <ip-address>:<node-port>/coffee-shop/resources/orders
 curl <ip-address>:<node-port>/coffee-shop/resources/orders/<order-uuid>
-----
+```
 
 
-## 12 factors
+## 12 факторов
 
 The https://12factor.net/[12 factors^] of modern software-as-a-service applications describe what aspects developers should take into account.
 Have a look at the described factors and contemplate, where we've already covered these aspects by using Enterprise Java with cloud-native technologies.
 With MicroProfile and its programming model, combined with Docker and Kubernetes, we can easily build 12-factor microservices.
 We'll discuss the impact of the 12 factors together.
 
-Now, we've setup a Kubernetes environment that orchestrates our microservices.
-Let's see how we can integrate Istio in the link:04-istio.adoc[next section].
+В этом разделе мы настроили среду Kubernetes, которая управляет нашими микросервисами.
+
+Теперь давайте посмотрим как можно интегрировать Istio в следующем
+[разделе](04-istio.md).
