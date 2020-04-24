@@ -12,6 +12,7 @@
 После того как Deployment будет удален, Pod-ы версии 2 так же будут удалены автоматически.
 
 > **Причмечание**
+>
 >Несмотря на то что мы можем поменять содержимое файлов конфигурации инфраструктуры (`infrastructure-as-code`) и применить их через `kubectl apply`, Kubernetes не сможет отследить удаление ресурсов в файлах, поскольку он только создает и обновляет конфигурации указанных ресусрсов.
 >Таким образом нам нужно явно `kubectl delete` ненужные ресурсы.
 
@@ -20,16 +21,16 @@
 ======
 
 Istio предоставляет фичи для отказоусточивости сервисов, например такие как, timeout-ы, circuit breaker-ы, повторы запросов.
-Поскольку sidecar прокси перехватывают все входящие и исходяшие подключения к контейнеру приложения, то они полностью контроллируют трафик по HTTP.
+Поскольку sidecar прокси перехватывают все входящие и исходяшие подключения от контейнера приложения, то прокси полностью контроллируют трафик по HTTP.
 
 Это означает, что если, например, наше приложение не поддерживает timeout соединения, то  Istio сможет это обеспечить без изменения кода приложения.
 
 Timeout
 ========
 
-Istio позволяет определить timeout на уровне правил. Для этого, нам нужно воспользоваться правилами на уровне Virtual Service.
+Istio позволяет установить timeout на уровне правил маршрутизации Virtual Service.
 
-Давайте добавим timeout 1 секунда для соединений к нашему coffee-shop сервису и применим обновленный Virtual Service на нашем кластере:
+Давайте добавим timeout 1 секунда для соединений от лица coffee-shop сервиса и применим обновленный Virtual Service на нашем кластере:
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -58,17 +59,18 @@ spec:
 Теперь общее время запросов за кофе не будет превышать одну секунду иначе sidecar прокси будет возврашать HTTP ошибку.
 
 
-Testing resiliency
+Тестирование отказоустойчивости
 ==================
 
-The challenge, however, is now to see whether our changes took effect as desired.
-We'd expect our applications to respond in much less than one second, therefore we would not see that error situation until it's in production.
-Luckily, Istio ships with functionality that purposely produces error situations, in order to test the resiliency of our services.
+Наше приложение всегда отвечает на запросы не дольше одной секунды. Однако нам надо убедиться, действительно ли наши изменения применились так как надо.
+Как же тогда проверить приложение на timeout?
 
-The sidecars have two main means to do that: adding artificial delays, and failing requests.
-We can instruct the routing rules to add these fault scenarios, if required only on a given percentage of the requests.
+К счастью, в Istio есть функционал позволяющий создавать исключительные ситуации  для тестирования отказоустойчивости приложений.
 
-We modify the barista virtual service to add a 3 seconds delay for 50% of the requests:
+Для этого у sidecar-ов есть два способа: добавление `искусственных задержек` и `сбой запросов`.
+Мы можем добвить в правила маршрутизации эти исключителные ситуации для определенного процента запросов.
+
+Мы можем поменять Virtual Service для сервиса `barista` добавив 3 секундную задержку для 50% запросов:
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -89,8 +91,8 @@ spec:
         percent: 50
 ```
 
-If we apply this updated resource to the cluster, we will notice that some of the connections will in fact fail, after roughly 1 second.
-We don't see any request taking the whole 3 seconds, due to the timeout on the coffee-shop routing rules:
+Если мы применим изменения к нашему кластеру, то увидем что некотороые запросы к нашему приложению будут заканчиваться ошибками спустя примерно одну секунду.
+Мы не увидем ни одного запроса, который будет длиться 3 секунды, из-за timeout для соединений от coffee-shop в 1 секунду, определенному в правилах маршрутизации этого сервиса. 
 
 ```
 while true; do
@@ -104,26 +106,26 @@ done
 
 >**Примечание**
 >
->The `fault` property is only meant for testing purposes. Please don't apply this to any other environment where you don't want connections to be slowed down or to randomly fail.
+>Параметер `fault` предназначен только для целей тестирования. Не применяйте его в продуктивных средах, чтобы избежать непроизвольного замедления или сбоев соединений.
 
-Besides the obvious responses, we can also use our observability tools to inspect what is happening.
-Have a look at the Grafana dashboards and the Jaeger traces again, to see how the failing requests are made visible.
+Помимо наблюдения за откликами от приложения, мы можем использовать инструменты  визуализации телеметрии Istio.
+Обратите внимание на дашборды Grafana и Jaeger трасировки, чтобы увидеть запросы, которые закончились с ошибкой. 
 
-This lab only covers timeouts and basic faults.
-Istio also offers functionality for retries and circuit breakers which are also applied and configured declaratively via Istio resources.
-Have a look at the further resources to learn more.
+Данная лабораторная работа охватывает только timeout-ы и простые ошибки, но Istio так же предоставляет функциональность для повтров запросов, circuit breaker-ы и др. 
+Чтобы узнать по больше ознакомтесь с [документацией](https://istio.io/docs/tasks/traffic-management/).
 
 
-Application level
+Уровень приложения
 =================
 
-Building a resilient microservice is key when designing microservices.
-Apart from the infrastructure resilience, sometimes more fine-grained application level resilience is required.
+Создание отказоустойчивого микросервиса является ключевым моментом при разработке микросервисов.
+Помимо отказоустойчивости на уровне инфраструктуры, иногда требуется более тонкая отказоустойчивость на уровне приложения.
 
-[MicroProfile Fault Tolerance](https://github.com/eclipse/microprofile-fault-tolerance/) provides a simple yet flexible solution to build a resilient microservice at the application-level.
-It offers capabilities for timeouts, retries, bulkheads, circuit breakers and fallback.
+[MicroProfile Fault Tolerance](https://github.com/eclipse/microprofile-fault-tolerance/) предоставляет простое, но кастомизируемое решение на уровне приложения для обеспечения отказоустойчивости.
+Он предлагает следующие возможности: timeout-ы, повторы запроса, bulkhead-ы, circuit breaker-ы и fallback.
 
-In general, application-level resiliency is more fine-grained while Istio's behavior is more coarse-grained.
-As a recommendation, we can use MicroProfile together with Istio's fault handling.
+В целом, отказоустойчивость реализованная на уровне приложения является более кастомизируемой и тонкой в настройке, тогда как на уровне Istio имеет фиксированный набор параметров и простоту в настройке без модификации приложения.
 
-Looks like we've finished the last section! [Conclusion](08-conclusion.md).
+Как рекомендация, в комплексных задачах решения отказоустойчивости можно использовать MicroProfile совместно с Istio.
+
+Похоже что мы закончили последний раздел! [Заключение](08-conclusion.md).
