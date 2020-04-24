@@ -35,4 +35,4 @@ mvn package
 
 Чтобы запустить Docker-контейнеры, необходимо создать соответсвующие образы Docker, содержащие всё, что нужно для запуска и функционирования наших приложений.
 
-Теперь, давайте посмотрим, как можно сделать [это](https://github.com/albert-haliulov/cloud-native-workshop-02-2020/blob/master/workshop/02-docker.md)
+Теперь, давайте посмотрим, как можно сделать это в [следующем разделе](https://github.com/albert-haliulov/cloud-native-workshop-02-2020/blob/master/workshop/02-docker.md).
