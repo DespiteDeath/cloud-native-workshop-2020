@@ -12,7 +12,7 @@
 
 Чтобы начать, склонируйте Git репозиторий и откройте проекты, находящиеся в нем:
 ```
-git clone https://github.com/sdaschner/cloud-native-workshop-02-2020
+git clone https://github.com/albert-haliulov/cloud-native-workshop-02-2020
 cd cloud-native-workshop-02-2020/
 ``` 
 ## Создание приложений
