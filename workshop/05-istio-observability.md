@@ -60,8 +60,8 @@ Service Graph (Kiali)
       20001:20001 &
 
 Откроем <http://localhost:20001/> и исследуем экземпляры service graph
-в разделе "`Graph`". Изучите доступные опции в разделах
-"`Display`" и "`Graph Type`".
+в разделе "Graph". Изучите доступные опции в разделах
+"Display" и "Graph Type".
 
 Трассировка (Jaeger)
 ----------------
