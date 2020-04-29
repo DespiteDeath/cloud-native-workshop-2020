@@ -1,4 +1,5 @@
-## Kubernetes
+Kubernetes
+==========
 
 Чтобы запустить наши приложения в кластере Kubernetes, нам нужно создать определенные ресурсы.
 В конечном счете все, что мы делаем - это определяем нашу среду исполнения, используя Infrastructure-as-Code, аналогично тому, что мы делали с использованием файлов `Dockerfile`, но на этот раз для всей среды.
@@ -37,10 +38,10 @@ Pod'ы в Kubernetes обычно не перезапускают. Если pod 
 
 Чтобы убедиться, что нам не нужно пересоздавать ресурсы модуля вручную, мы используем контроллеры, которые следят за созданием необходимого количества копий pod-ов - Kubernetes deployments.
 
-## Deployments
+## Deployments (развертывание)
 
-We create a Kubernetes deployment that manages one or more replicas of our microservices for us.
-Have a look at the following Kubernetes deployment definition:
+Создадим Kubernetes deployment - эта сущность управляет одной или несколькими репликами наших микросервисов.
+Взгляните на конфигурацию deployment:
 
 ```yaml
 kind: Deployment
@@ -66,32 +67,31 @@ spec:
         - containerPort: 9080
 ```
 
-This definition looks similar to the pod snippet before, but it encapsulates the pod as a template, from which it'll create the pod replicas.
-The deployment will ensure that the desired number of replicas will be met.
-If a pod is terminated, whether deliberately or not, the deployment will automatically create a replacement, that is a new pod.
+Этот deployment выглядит аналогично описанию pod-а, приведенному ранее, но здесь pod описывается в секции template (шаблон), по которому будут создаваться новые реплики pod-а.
+Deployment обеспечиват развертывание необходимого количества копий pod-ов.
+Если pod по какой-то причине остановился (специально или нет - бне имеет значения), deployment автоматически сделает замену остановленному pod-у, то есть создаст новую его копию.
 
-If we want to scale our application, change the deployment definition in another way, or deploy a different version (that is Docker image), we simply change the YAML definition and update it against the cluster.
-Kubernetes will try to make sure that the new changes will be reflected, while keeping the disruption minimal.
-It ships with zero-downtime deployment support out of the box.
+Если мы хотим масштабировать наше приложение, изменить конфигурацию deployment, или развернуть другую версию приложения (используя другой образ Docker), мы просто изменяем YAML-конфигурацию deployment и обновляем его в кластере.
+Kubernetes позаботится о том, чтобы такие изменения были правильно отработаны, с минимально возможным временем простоя.
 
 
-## Life cycle &amp; probes
+## Контроль развертывания (liveness и readiness)
 
-A pod that contains a Java application will need a few moments to be fully up-and-running.
-Since Kubernetes has no knowledge of the contents of the running container it could only assume that running pods are immediately able to handle traffic.
-However, that is not the case and therefore we need to signal once a container is ready to do some meaningful work.
+Для pod-а, в котором работает приложение Java, потребуется несколько минут, чтобы он был полностью готов к работе. Поскольку Kubernetes ничего не знает о содержимом работающего контейнера, он может только предполагать, что работающие модули сразу могут обрабатывать входящие запросы.
+Однако это конечно же не так, и поэтому мы должны каким-то образом сообщить, когда контейнер будет полностью готов делать что-то полезное.
 
-For that reason, we include liveness and readiness probes into our deployment definition.
+С этой целью мы включаем сервисы жизнеспособности (liveness) и готовности (readiness) в deployment.
 
-A liveness probe tells Kubernetes whether the whole pod (for us the application server) is still running.
-If that is not the case, Kubernetes will immediately terminate and replace it.
-A readiness probe indicates whether the pod is ready to do some work, that is, handle traffic.
+Сервис жизнеспособности сообщает Kubernetes, работает ли  модуль в целом (для нас это - сервер приложений).
+Если это не так, Kubernetes немедленно остановит pod и заменит его на новую копию.
+Проверка готовности сообщает, готов ли модуль для выполнения полезной работы, то есть обработки входящего трафика.
 
-There are multiple types of https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes[container probes^].
-We use an exec action which can execute an arbitrary binary inside the container.
-The `curl` commands will connect to the application servers, and the health check resources, respectively.
+Существуют разные типы таких [сервисов контроля развертывания](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes).
 
-Now, have a look at the resulting deployment definition:
+Мы будем использовать функцию exec, которая позволяет выполнить произвольный скрипт внутри контейнера.
+Команды `curl` будут подключаться к серверам приложений и ресурсам проверки работоспособности соответственно.
+
+Взглянем на окончательную конфигурацию deployment:
 
 ```yaml
 kind: Deployment
@@ -125,42 +125,39 @@ spec:
           initialDelaySeconds: 40
 ```
 
-We create YAML files with this content under the `deployment/` folders of both microservice projects.
-One deployment will be called `coffee-shop`, like the one displayed, and the other one `barista`.
-Make sure that all names, labels, image, and URL declarations are correct.
+Файлы YAML с этим контентом надо ссоздать в папках `deployment/` двух проектов микросервисов.
+Один deployment будет называться `coffee-shop` (то описание, которое мы только что обсудили выше), а другой - `barista`.
+Убедитесь, что все имена, метки, изображения и URL указаны верно.
 
-Now, we finally want to create these resources in our Kubernetes cluster.
-We simply apply the files with the `kubectl apply` command:
+Теперь мы наконец создадим эти ресурсы в нашем кластере Kubernetes.
+Для этого нужно просто применить эти файлы к конфигурации кластера командой `kubectl apply`:
 
 ```
 kubectl apply -f coffee-shop/deployments/
 kubectl apply -f barista/deployments/
 ```
 
-The command will apply, that is create or update, all resources that resides under the corresponding directory.
+Такая команда применит (создаст - если таких пока нет, или обновит - если уже есть), все ресурсы, которые находятся в соответствующем каталоге.
 
-You can check whether the resources have been created successfully, by querying the current deployments and pods:
+Вы можете проверить, были ли ресурсы созданы успешно, запросив текущий статус deployment-ов и pod-ов:
 
 ```
 kubectl get pods
 kubectl get deployments
 ```
+После короткого периоада запуска вы должны увидеть два pod-а, один - coffee-shop и один - barista, которые готовы, т.е. `READY: ... 1/1`.
 
-After a short startup phase, you should see two pods, one for coffee-shop and one for barista, that are ready, i.e. `READY: ... 1/1`.
+Отлично! Наши приложения теперь работают в облаке, но как же к ним подключиться?
 
-Now our two applications apparently are running in the cloud, but how to connect to them?
+## Сервисы (Services)
 
+Service Kubernetes - это логическая абстракция над «приложениями» (какими бы они ни были) и их репликами.
+Service - это точка входа для нашего микросервиса.
+Service-ы действуют как балансировщики нагрузки и распределяют запросы по разным модулям.
 
-## Services
+Внутри кластеров Service работает через виртуальный IP-адрес кластера и через DNS по соответствующему имени - это позволяет нам легко подключаться к именам хостов, используя понятные имена, как, например, `barista`, если в кластере есть service `barista`.
 
-A Kubernetes service is a logical abstraction over "`applications`" (whatever these are) and the replicas of these.
-Services are single points of entry when we want to connect to our microservices.
-They act like load balancers and transparently distribute the requests to the individual pods.
-
-Inside clusters, services are resolvable via a cluster-internal virtual IP address and via DNS by their name.
-The latter enables us to simply connect to host names such as `barista`, if a service `barista` exists within the cluster.
-
-Let's have a look at the coffee-shop service definition:
+Давайте посмотрим на определение Service `coffee-shop`:
 
 ```yaml
 kind: Service
@@ -178,34 +175,38 @@ spec:
   type: NodePort
 ```
 
-The service resource only defines a name, some meta data labels, and where to route traffic to: all pods that match the given selector.
-If you have a look at our deployment definitions again, you will see that all pods define an identical `app` label.
-This is the connection how the services know, which pods to distribute the requests to.
-This service will connect to all pods with label `app: coffee-shop` via port `9080`.
-Furthermore, services only connect to pods which are ready.
+Определение service соодержит только имя, некоторые метаданные меток и информацию по роутингу траффика: все pod-ы, которые соответствуют данному selector-у.
+Если вы посмотрите на нашу конфигурацию deployment, то увидите, что все модули определяют одинаковую метку `app`.
+Это специальная метка, с помощью которой service-ы понимают, в какие pod-ы можно отправлять запросы.
+Этот service будет подключаться ко всем pod-ам с меткой `app: coffee-shop` через порт` 9080`.
+Само собой, service-ы подключаются только к рабочим pod-ам.
 
-Now, we create YAML definitions for the coffee-shop and barista services, also under the `deployment/` directories.
-You can either create a new file alongside the deployment definition, or put all Kubernetes resources in a single YAML file, with the resources (that is, YAML objects) being separated by a line of three dashes (`---`).
-Again, make sure that the name, label, and selector definition match either the coffee-shop or barista application.
+Идем дальше. Создадим конфигурацию YAML для service-ов `coffee-shop` и `barista` - в папке `deployment/`.
+Вы можете создать новый файл - рядом с конфигурацией deployment, или поместить все ресурсы Kubernetes в один файл YAML, в котором ресурсы (то есть объекты YAML) разделены линией из трех штрихов (`---`).
+Опять же, убедитесь, что имя, метка и определение селектора соответствуют или приложению coffee-shop, или приложению barista.
 
-We create these resources on the cluster as well, by issuing the same commands like before:
+Создадим/обновим эти ресурсы в кластере, выполняя те же команды, что и раньше:
 
 ```
 kubectl apply -f coffee-shop/deployments/
 kubectl apply -f barista/deployments/
 ```
 
-This is the nice story about declarative Infrastructure-as-Code files: we specify the desired state, and let Kubernetes _apply_ the definitions against the cluster.
-Our directories now contain the service definitions, as well.
+Это хороший пример концепции Infrastructure-as-Code: мы указываем желаемое состояние и позволяем Kubernetes _применить_ конфигурацию к нашему кластеру.
 
-You can now verify whether the services have been created correctly:
+Наши папки теперь также содержат определения service-ов.
+Можете проверить, правильно ли они были созданы:
 
 ```
 kubectl get services
 ```
 
-
 ## Accessing our applications
+
+Теперь попробум подключиться к нашему приложению coffee-shop "снаружи" границ кластера.
+
+Если мы создали кластер в облаке IBM с использованием аккаунта Lite, то подключиться к нашему приложению мы сможем через IP-адрес узла и порт узла service.
+Поэтому мы получаем общедоступный IP-адрес нашего кластера:
 
 Now, we will connect to our coffee-shop application from outside the cluster.
 
