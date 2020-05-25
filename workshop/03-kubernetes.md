@@ -205,13 +205,7 @@ kubectl get services
 
 Теперь попробум подключиться к нашему приложению coffee-shop "снаружи" границ кластера.
 
-Если мы создали кластер в облаке IBM с использованием аккаунта Lite, то подключиться к нашему приложению мы сможем через IP-адрес узла и порт узла service.
-Поэтому мы получаем общедоступный IP-адрес нашего кластера:
-
-Now, we will connect to our coffee-shop application from outside the cluster.
-
-If we have created a lite cluster we have to connect to our application via the IP address of the (only) node and the node port of the service.
-Therefore, we retrieve the public IP address of our cluster:
+Если мы создали кластер в облаке IBM с использованием аккаунта Lite, то подключиться к нашему приложению мы сможем через IP-адрес узла и порт сервиса. Вот так можно получить общедоступный IP-адрес нашего кластера:
 
 ```
 ibmcloud ks workers --cluster cloud-native
@@ -219,7 +213,7 @@ ID         Public IP       Private IP      Machine Type   State    Status   Zone
 kube-xxx   159.122.186.7   10.144.188.64   free           normal   Ready    mil01   1.10.12_1541   
 ```
 
-And the node port of our coffee-shop application:
+И номер порта нашего приложения coffee-shop:
 
 ```
 kubectl get service coffee-shop
