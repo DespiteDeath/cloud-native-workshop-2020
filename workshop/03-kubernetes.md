@@ -1,5 +1,4 @@
-Kubernetes
-==========
+# Kubernetes
 
 Чтобы запустить наши приложения в кластере Kubernetes, нам нужно создать определенные ресурсы.
 В конечном счете все, что мы делаем - это определяем нашу среду исполнения, используя Infrastructure-as-Code, аналогично тому, что мы делали с использованием файлов `Dockerfile`, но на этот раз для всей среды.
@@ -201,11 +200,11 @@ kubectl apply -f barista/deployments/
 kubectl get services
 ```
 
-## Accessing our applications
+## Обращение к приложениям
 
 Теперь попробум подключиться к нашему приложению coffee-shop "снаружи" границ кластера.
 
-Если мы создали кластер в облаке IBM с использованием аккаунта Lite, то подключиться к нашему приложению мы сможем через IP-адрес узла и порт сервиса. Вот так можно получить общедоступный IP-адрес нашего кластера:
+Если мы создали кластер в облаке IBM с использованием аккаунта Lite, то подключиться к нашему приложению мы сможем через IP-адрес узла и порт сервиса. Вот так можно получить публичный IP-адрес нашего кластера:
 
 ```
 ibmcloud ks workers --cluster cloud-native
@@ -221,23 +220,26 @@ NAME          TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 coffee-shop   NodePort   172.21.23.149   <none>        9080:30995/TCP   2m
 ```
 
-With the example details, we can access our coffee-shop application using the URL `159.122.186.7:30995`, by combining the public IP address and the node port of the service:
+В данном случае мы можем обратиться к нашему приложению coffee-shop используя URL `159.122.186.7:30995`, т.е. составив его из публичного IP адреса и NodePort сервиса:
 
 ```
 curl <ip-address>:<node-port>/coffee-shop/resources/orders -i
 ```
+> Если бы вы создали стандартный кластер (не из под аккаунта Lite), то вы могли бы воспользоваться Kubernetes ingress.
+> 
+>Однако, в этом семинаре, мы сосредоточимся на работе с сервисными сетками Istio и поэтому продемонстрируем работу Istio gateway (в следующем [разделе](04-istio.md)) вместо Kubernetes ingress.
 
-NOTE: If you have created a standard cluster, you can use a Kubernetes ingress resources.
-However, in this workshop, we'll focus on Istio networking and thus will demonstrate Istio gateway resources instead (part of the next section).
 
 
-## Kubernetes Config Maps
+## Kubernetes Config Maps (конфигурационные карты)
 
-We can define environment variables directly in Kubernetes deployment definitions, or configure them in so called config maps.
-A config map is a Kubernetes resources that stores configuration properties in the cluster.
-It can be mapped to files or, as in our example, environment variables.
+Мы можем определять переменные среды окружения непосредственно в декскрипторе развертывания приложения в Kubernetes или настраивать их в так называемых конфигурационных картах.
 
-We create the following Kubernetes YAML definition:
+Конфигурационные карты это ресурсы Kubernetes, которые хранят конфигурационные параметры внутри кластера.
+
+Они могут быть смапированны в файлы или, как в нашем примере, в переменные среды окружения.
+
+Создадим следующее определение для Kubernetes:
 
 ```yaml
 kind: ConfigMap
@@ -248,9 +250,9 @@ data:
   location: CEE
 ```
 
-This defines the config map `coffee-config`, which contains the property `location` with the value `CEE`.
+Это создаст конфигурационную карту `coffee-config`, с параметром `location` и его значением `CEE`.
 
-In order to make that property available to the running pods later on, we include the value in our Kubernetes deployment definition:
+Для того чтобы значение этого параметра было доступно Pod-ам, мы добавим ссылку на конфигурационную карту в наш дескриптор развертывания приложения:
 
 ```yaml
 # ...
@@ -269,12 +271,12 @@ containers:
 # ...
 ```
 
-The above example maps the config map values to environment variables in the pods.
-As MicroProfile Config ships with a default config source for environment variables, this property will automatically be available to our application.
-Thus, the injected value for the `location` will be the enum value `CEE`.
+В примере выше присваивается значение параметра `location` из конфигурационной карты `coffee-config` переменной окружения `location` внутри Pod-а.
 
-You can have a look at the coffee order locations under the resource for single coffee orders.
-You retrieve the URL of a single coffee order from the response of all orders:
+Поскольку MicroProfile Config дает приложению конфигурационные параметры в виде переменных окружения, этот параметер `location` будет автоматически доступен приложению и значение для `location` будет `CEE`.
+
+Давайе посмотрим на месторасположение по конкретным заказам кофе. 
+Для этого сначала надо получить все заказы и уже по каждому из заказов посмотреть:
 
 ```
 curl <ip-address>:<node-port>/coffee-shop/resources/orders
@@ -284,12 +286,10 @@ curl <ip-address>:<node-port>/coffee-shop/resources/orders/<order-uuid>
 
 ## 12 факторов
 
-The https://12factor.net/[12 factors^] of modern software-as-a-service applications describe what aspects developers should take into account.
-Have a look at the described factors and contemplate, where we've already covered these aspects by using Enterprise Java with cloud-native technologies.
-With MicroProfile and its programming model, combined with Docker and Kubernetes, we can easily build 12-factor microservices.
-We'll discuss the impact of the 12 factors together.
+[12 Факторов](https://12factor.net/) современных Software-as-a-Service приложений описывают какие подходы и аспекты разработки должны быть применены при проектиовании таких приложений. 
 
-В этом разделе мы настроили среду Kubernetes, которая управляет нашими микросервисами.
+Посмотрите на описанные факторы и оцените, где мы уже эти аспекты применили, используя Enterprise Java с облачными технологиями.
 
-Теперь давайте посмотрим как можно интегрировать Istio в следующем
-[разделе](04-istio.md).
+С помощью MicroProfile и его программной модели, в сочетании с Docker и Kubernetes, мы легко можем создавать 12-факторные микросервисы.
+
+А на данный момент, мы настроили среду Kubernetes, которая управляет нашими микросервисами. Теперь давайте посмотрим как можно интегрировать Istio с нашим приложением в следующем [разделе](04-istio.md).
