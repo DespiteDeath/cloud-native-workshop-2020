@@ -153,7 +153,7 @@ Console](https://cloud.ibm.com/kubernetes/catalog/create) или CLI.
 
 ### Установка Istio
 
-Теперьмы устанавливаем Istio:
+Теперь мы устанавливаем Istio:
 
     istioctl manifest apply --set profile=demo
 
