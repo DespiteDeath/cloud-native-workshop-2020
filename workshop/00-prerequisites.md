@@ -4,9 +4,8 @@
 Для проведения семинара необходимо иметь следующее
 инструменты, установленные на вашем ноутбуке:
 
--   Любая JDK 8 или новее, например
-    <https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=openj9>
-
+-   Любая JDK 8 или новее, например [adoptopenjdk](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=openj9)
+ 
 -   [Maven 3](https://maven.apache.org/download.cgi)
 
 -   [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
@@ -57,7 +56,7 @@
 > **Примечание**
 >
 > IBM Cloud предлагает бесплатный тип Kubernetes кластера, который будет работать в течении 30
-> дней без трат. Вы можете использовать этот тип, как только подключили
+> дней. Вы можете использовать этот тип, как только подключили
 > банковскую карту или ввели соответвтующий промо-код.
 
 ### IBM Cloud CLI
@@ -73,7 +72,7 @@
 
 Вставьте API ключ ниже в `apikey` параметр.
 
-Теперь мы устанавливаем локаль и отменяем конфигурацию, которая может существовать, 
+Теперь мы устанавливаем locale и отменяем конфигурацию, которая может существовать, 
 если вы использовали CLI в прошлом:
 
     ibmcloud config --locale en_US
@@ -83,9 +82,8 @@
     ibmcloud login --apikey <yourkey> -r eu-de
 
 Чтобы убедиться, что плагины установлены правильно, запустите
-`ibmcloud plugin list`. Container Service plugin и Registry plugin (Kubernetes-service 
-отображены как `container-service/kubernetes-service` и
-`container-registry`.
+`ibmcloud plugin list`. Container Service plugin и Registry plugin 
+отображены как `container-service/kubernetes-service` и `container-registry`.
 
 IBM Kubernetes Service
 ----------------------
@@ -95,14 +93,14 @@ Console](https://cloud.ibm.com/kubernetes/catalog/create) или CLI.
 Для этого семинара достаточно бесплатного кластера, но вы можете создать
 стандартный кластер с желаемой конфигурацией.
 
-Если вы хотите использовать CLI, перейдите к одному из следующих:
+Если вы хотите использовать CLI, перейдите к одной из следующих команд:
 
-Для бесплатного кластера используйте следующую команду
+Для бесплатного кластера используйте:
 
     ibmcloud ks cluster create classic  \
       --name cloud-native
 
-Для стандартного кластера, включающего 3 рабочих узла используйте следующую команду: 
+Для стандартного кластера, включающего 3 рабочих узла используйте: 
 
     ibmcloud ks cluster create classic \
       --name cloud-native \
@@ -126,20 +124,23 @@ Console](https://cloud.ibm.com/kubernetes/catalog/create) или CLI.
 
 ### Доступ к кластеру
 
-Теперь посмотрим, как настроить контекст для работы с нашими кластерами, используя `kubectl` CLI, получить доступ к панели управления Kubernetes и собрать основную
+Теперь посмотрим, как настроить контекст для работы с нашими кластерами, используя 
+`kubectl` CLI, получить доступ к панели управления Kubernetes и собрать основную 
 информацию о нашем кластере.
 
-Список доступных кластеров: `ibmcloud ks clusters`. Эта команда должна
-показать ваш кластер, который создается.
+Список доступных кластеров: `ibmcloud ks clusters`. Эта команда должна показать ваш 
+кластер, который создается.
 
-После запуска кластера, загрузите файл конфигурации и сертификаты для кластера, используя команду `cluster config`:
+После запуска кластера, загрузите файл конфигурации и сертификаты для кластера, используя 
+команду `cluster config`:
 
     ibmcloud ks cluster config --cluster cloud-native
 
 Получите основную информацию о кластере и его рабочих узлах. Эта
-информация может помочь вам управлять кластером и устранять проблемы
+информация может помочь вам управлять кластером и устранять проблемы.
 
 Получить информацию о вашем кластере:
+
 `ibmcloud ks cluster get --cluster cloud-native`
 
 Проверить узлы в кластере:
@@ -178,14 +179,14 @@ Console](https://cloud.ibm.com/kubernetes/catalog/create) или CLI.
 
     kubectl label namespace default istio-injection=enabled
 
-Это включит автоматический sidecar injection для пространства имен `default`
+Это включит автоматический sidecar injection для `default` namespace.
 
 Поздравляем! Мы успешно установили Istio в наш кластер.
 
 ### Container Registry
 
-Для создания и распостранения образов Docker нам нужен Docker
-реестр. Мы можем использовать IBM Container Registry к которому можно получить доступ
+Для создания и распостранения образов Docker нам нужен Docker реестр. 
+Мы можем использовать IBM Container Registry к которому можно получить доступ
 прямо из нашего кластера Kubernetes.
 
 Войдем в Container Registry service с помощью `ibmcloud` CLI и получим 
@@ -196,14 +197,14 @@ Console](https://cloud.ibm.com/kubernetes/catalog/create) или CLI.
     ibmcloud cr region
     You are targeting region 'eu-central', the registry is 'de.icr.io'.
 
-Мы используем CLI, чтобы создать уникальное пространство имен в Container Registry
+Воспользуемся CLI, чтобы создать уникальное пространство имен в Container Registry
 service (`cr`) для нашего семинара:
 
     ibmcloud cr namespace-add cee-<your-name>-workshop
     ibmcloud cr namespaces
 
-Чтобы протестировать наше новое пространство имен реестра, извлечем общедоступное изображение,
-изменим тэг на соотвтетствующий нашему реестру, и запушим его:
+Чтобы протестировать новое пространство имен реестра, извлечем общедоступное изображение,
+изменим тег на соотвтетствующий нашему реестру, и запушим его:
 
     docker pull hello-world
     docker tag hello-world de.icr.io/cee-<your-name>-workshop/hello-world:1
@@ -215,10 +216,10 @@ service (`cr`) для нашего семинара:
 
 > **Примечание**
 >
-> Во всех следующих примерах вам нужно будет адаптировать именя изображений/
-> пространств имен! Это важно учитывать,
-> в противном случае примеры не будут работать, так как изображения не существуют в
-> вашем аккаунте.
+> Во всех следующих примерах вам нужно будет адаптировать имена изображений/namespace-ов
+>  Это важно учитывать, в противном случае примеры не будут работать, так как изображения
+>  не существуют в вашем аккаунте.
+> 
 
 Локальная настройка Docker
 ------------------
