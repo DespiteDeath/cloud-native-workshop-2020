@@ -12,8 +12,8 @@
 
 Чтобы начать, склонируйте Git репозиторий и откройте проекты, находящиеся в нем:
 ```
-git clone https://github.com/albert-haliulov/cloud-native-workshop-02-2020
-cd cloud-native-workshop-02-2020/
+git clone https://github.com/albert-haliulov/cloud-native-workshop-2020
+cd cloud-native-workshop-2020/
 ``` 
 ## Создание приложений
 
@@ -35,4 +35,4 @@ mvn package
 
 Чтобы запустить Docker-контейнеры, необходимо создать соответсвующие образы Docker, содержащие всё, что нужно для запуска и функционирования наших приложений.
 
-Теперь, давайте посмотрим, как можно сделать это в [следующем разделе](https://github.com/albert-haliulov/cloud-native-workshop-02-2020/blob/master/workshop/02-docker.md).
+Теперь, давайте посмотрим, как можно сделать это в [следующем разделе](02-docker.md).
