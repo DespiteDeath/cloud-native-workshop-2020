@@ -16,7 +16,7 @@
 
 -   [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
--   [IBM Cloud CLI](https://cloud.ibm.com/docs/home/tools), включая
+-   [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cli-getting-started), включая
     плагины kubernetes-service и container-registry
 
 -   [istioctl (version
@@ -145,7 +145,7 @@ ibmcloud ks cluster create classic \
 ibmcloud ks cluster config --cluster cloud-native
 ```
 Получите основную информацию о кластере и его рабочих узлах. Эта
-информация может помочь вам управлять кластером и устранять проблемы.
+информация понадобится при управлении кластером и решенни проблем с ним.
 
 Получить информацию о вашем кластере:
 
@@ -215,8 +215,8 @@ service (`cr`) для нашего семинара:
 ibmcloud cr namespace-add cee-<your-name>-workshop
 ibmcloud cr namespaces
 ```
-Чтобы протестировать новое пространство имен реестра, извлечем общедоступное изображение,
-изменим тег на соотвтетствующий нашему реестру, и запушим его:
+Чтобы протестировать новое пространство имен реестра, давайте загрузим какой-нибудь Docker image, например, `hello-world`, 
+изменим его тег на соотвтетствующий нашему реестру, и загрузим image в реестр:
 ```
 docker pull hello-world
 
@@ -224,15 +224,15 @@ docker tag hello-world de.icr.io/cee-<your-name>-workshop/hello-world:1
 
 docker push de.icr.io/cee-<your-name>-workshop/hello-world:1
 ```
-Проверим, есть ли наше изображение в частном реестре:
+Проверим, есть ли наш image в реестре:
 ```
 ibmcloud cr images
 ```
 > **Примечание**
 >
-> Во всех следующих примерах вам нужно будет адаптировать имена изображений/namespace-ов
->  Это важно учитывать, в противном случае примеры не будут работать, так как изображения
->  не существуют в вашем аккаунте.
+> Во всех следующих примерах вам нужно будет адаптировать имена image-ей/namespace-ов
+>  Это важно учитывать, в противном случае примеры не будут работать, так как image-ей 
+>  нет в вашем реестре.
 > 
 
 ## Локальная настройка Docker
