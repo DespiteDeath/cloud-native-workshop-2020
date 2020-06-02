@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: barista
+  labels:
+    app: barista
+spec:
+  selector:
+    app: barista
+  ports:
+    - port: 9080
+      name: http
+  type: NodePort
