@@ -8,21 +8,21 @@
  
 -   [Maven 3](https://maven.apache.org/download.cgi)
 
--   [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-
 -   [curl](https://curl.haxx.se/download.html) 
-
--   [docker](https://docs.docker.com/install/)
-
--   [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 -   [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cli-getting-started), включая
     плагины kubernetes-service и container-registry
 
 -   [istioctl (version
-    1.4.0)](https://istio.io/docs/setup/getting-started/#download)  
-    но используем ISTIO\_VERSION 1.4.0:
-    `curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.4.0 sh -`
+    1.6.0)](https://istio.io/docs/setup/getting-started/#download) (необходимо только загрузить istioctl и добавить в PATH)
+    
+    Следующие инструменты также необходимы, но будут установлены вместе с IBM Cloud CLI.
+    
+-   [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+-   [docker](https://docs.docker.com/install/)
+
+-   [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 ## Проверка
 
@@ -33,11 +33,6 @@
 - `docker run --rm hello-world`
 - `kubectl version` (версия клиента должна соответствовать)
 - `istioctl version` (версия клиента должна соответствовать)
-
-## Доступ IBM Cloud
-
-
-![Документация по установке CLI](images/docs.gif)
 
 ### Регистрация учетной записи IBM Cloud
 
@@ -181,8 +176,8 @@ istioctl verify-install -f generated-manifest.yaml
 ```
 Результат второй команды (последние 3 строки) выглядит так:
 ```
-Checked 23 crds
-Checked 9 Istio Deployments
+Checked 25 crds
+Checked 3 Istio Deployments
 Istio is installed successfully
 ```
 Затем мы включаем автоматический sidecar injection:
