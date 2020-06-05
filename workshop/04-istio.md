@@ -22,19 +22,19 @@ Istio интегрируется с Kubernetes, расширяя API-модел�
 Создадим Istio Virtual Service для приложения barista:
 
 ```yaml
-    apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: barista
-    spec:
-      hosts:
-      - barista
-      http:
-      - route:
-        - destination:
-            host: barista
-            subset: v1
-    ---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: barista
+spec:
+  hosts:
+  - barista
+  http:
+  - route:
+    - destination:
+        host: barista
+        subset: v1
+---
 ```
 
 Virtual Service определяет правила маршрутизации для сервиса, который является частью
@@ -50,17 +50,17 @@ label-ом)`v1`. На практике это действует как марш
 Создадим Destination Rule для приложения barista которое определяет subset `v1`.
 
 ```yaml
-    apiVersion: networking.istio.io/v1alpha3
-    kind: DestinationRule
-    metadata:
-      name: barista
-    spec:
-      host: barista
-      subsets:
-      - name: v1
-        labels:
-          version: v1
-    ---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: barista
+spec:
+  host: barista
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+---
 ```
 
 Таким образом, pod-ы, которые содержат желаемые label-ы (здесь это `version`)
@@ -85,21 +85,21 @@ cчитаются частью subset-а. Использование label-а `v
 который направляет траффик в кластер:
 
 ```yaml
-    apiVersion: networking.istio.io/v1alpha3
-    kind: Gateway
-    metadata:
-      name: coffee-shop-gateway
-    spec:
-      selector:
-        istio: ingressgateway
-      servers:
-      - port:
-          number: 80
-          name: http
-          protocol: HTTP
-        hosts:
-        - "*"
-    ---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: coffee-shop-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
 ```
 
 Gateway задает wildcard хост (`*`), который соответствует всем 
@@ -108,23 +108,23 @@ Gateway задает wildcard хост (`*`), который соответст�
 Virtual Service.
 
 ```yaml
-    apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: coffee-shop
-    spec:
-      hosts:
-      - "*"
-      gateways:
-      - coffee-shop-gateway
-      http:
-      - route:
-        - destination:
-            host: coffee-shop
-            port:
-              number: 9080
-            subset: v1
-    ---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: coffee-shop
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - coffee-shop-gateway
+  http:
+  - route:
+    - destination:
+        host: coffee-shop
+        port:
+          number: 9080
+        subset: v1
+---
 ```
 
 Маршрутизация теперь выглядит немного иначе. Поскольку мы определяем 
@@ -139,17 +139,17 @@ Virtual Service.
 Destination Rule.
 
 ```yaml
-    apiVersion: networking.istio.io/v1alpha3
-    kind: DestinationRule
-    metadata:
-      name: coffee-shop
-    spec:
-      host: coffee-shop
-      subsets:
-      - name: v1
-        labels:
-          version: v1
-    ---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: coffee-shop
+spec:
+  host: coffee-shop
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+---
 ```
 
 ### Доступ к приложениям
