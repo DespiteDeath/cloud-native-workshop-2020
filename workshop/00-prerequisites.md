@@ -16,7 +16,8 @@
 -   [istioctl (version
     1.6.0)](https://istio.io/docs/setup/getting-started/#download) (необходимо только загрузить istioctl и добавить в PATH)
     
-    Следующие инструменты также необходимы, но будут установлены вместе с IBM Cloud CLI.
+    
+Следующие инструменты также необходимы, но будут установлены вместе с IBM Cloud CLI.
     
 -   [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
