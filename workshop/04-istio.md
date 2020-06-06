@@ -175,9 +175,13 @@ kubectl get services -n istio-system istio-ingressgateway --template '{{range .s
 >     ibmcloud ks workers --cluster cloud-native
 >
 >
+<<<<<<< HEAD
 > Если у вас установлен `jq`, вы можете напрямую извлечь IP-адрес вызвав:
 >
 >     ibmcloud ks workers --cluster cloud-native --json | jq -r '.[0].publicIP'
+=======
+>     ibmcloud ks workers cloud-native --json | jq -r '.[0].publicIP'
+>>>>>>> 7854c203bc020e4f5e30ad531e8a9341101710b2
 
 
 Теперь мы можем получить доступ к нашему сервису, используя IP-адрес узла и 
