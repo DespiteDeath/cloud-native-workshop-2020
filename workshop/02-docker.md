@@ -74,13 +74,12 @@
  docker run --rm -d \
    --name barista \
    --network dkrnet \
-   -p 9080:9080 \
    de.icr.io/cee-<your-name>-workshop/barista:1
 
  docker run --rm -d \
    --name coffee-shop \
    --network dkrnet \
-   -p 9081:9080 \
+   -p 9080:9080 \
    de.icr.io/cee-<your-name>-workshop/coffee-shop:1
  ```
 Эти команды запустят приложения в виде контейнеров Docker. Параметр `--rm` удалит контейнеры после их остановки, `-d` запустит контейнеры в фоновом режиме, `--name` назначет логическое имя контейнеру, `--network` гарантирует, что контейнеры будут работать в указаной сети, а `-p `смапит внутренние порты контейнеров на локальный хост.
@@ -130,7 +129,7 @@ curl localhost:9080/coffee-shop/resources/orders -i
  ### Заказ кофе
 Теперь мы можем запросить список заказов кофе:
 ```
-curl localhost:9081/coffee-shop/resources/orders
+curl localhost:9080/coffee-shop/resources/orders
 ```
 
  Этот запрос  выдаст нам спискок заказов в виде набора JSON файлов. Поскольку мы еще не создавали заказов то возвращенный массив будет пуст.
