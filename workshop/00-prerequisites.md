@@ -163,7 +163,7 @@ kubectl get svc,deploy,po --all-namespaces
 ```
 istioctl manifest apply --set profile=demo
 ```
-Это установит Istio 1.4.0 с распределенной трассировкой, Grafana и Kiali.
+Это установит Istio 1.6.0 с распределенной трассировкой, Grafana и Kiali.
 
 Убедитесь, что все модули работают, прежде чем продолжить.
 ```
